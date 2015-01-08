@@ -9,8 +9,9 @@ package mediainfo
 import "C"
 
 import (
-	// "encoding/xml"
 	"errors"
+	"strconv"
+	"strings"
 	"unsafe"
 )
 
@@ -108,6 +109,57 @@ func (handle MediaInfo) Inform(stream int) (string, error) {
 	}
 
 	return ret, nil
+}
+
+type Info map[string]map[string]interface{}
+
+/*
+ * Get Parsed version of file info
+ *
+ * Takes a stream number
+ */
+func (handle MediaInfo) Info(stream int) (Info, error) {
+	info := make(Info)
+
+	handle.Option("Complete", "1")
+	handle.Option("Output", "CSV")
+	val, err := handle.Inform(stream)
+	if err != nil {
+		return info, err
+	}
+
+	// log.Printf("CSV %+v\n", val)
+
+	var section string
+	lines := strings.Split(val, "\n")
+	for i := range lines {
+		line := lines[i]
+		lineSplit := strings.SplitN(line, ",", 2)
+
+		splitLength := len(lineSplit)
+
+		if splitLength == 1 {
+			section = lineSplit[0]
+			info[section] = make(map[string]interface{})
+		} else if splitLength == 2 {
+			subsection_no_slashes := strings.Replace(lineSplit[0], "/", " ", -1)
+			subsection_title := strings.Title(subsection_no_slashes)
+			subsection_no_spaces := strings.Replace(subsection_title, " ", "_", -1)
+
+			if _, ok := info[section][subsection_no_spaces]; !ok {
+				floatVal, err := strconv.ParseFloat(lineSplit[1], 64)
+				if err == nil {
+					info[section][subsection_no_spaces] = floatVal
+				} else {
+					info[section][subsection_no_spaces] = lineSplit[1]
+				}
+			}
+		}
+	}
+
+	// log.Printf("INFO %+v\n", info)
+
+	return info, nil
 }
 
 /* Close a handle. */
