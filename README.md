@@ -4,4 +4,4 @@ Basic MediaInfo bindings for Go.
 
 ## Installing
 
-go get github.com/dwbuiten/go-mediainfo/mediainfo
+go get github.com/enobrev/go-mediainfo/mediainfo

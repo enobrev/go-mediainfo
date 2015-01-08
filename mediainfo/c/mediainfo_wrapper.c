@@ -35,6 +35,16 @@ char *mediainfo_c_get(void *opaque, char *key,
                                   MediaInfo_Info_Text, MediaInfo_Info_Name);
 }
 
+char *mediainfo_c_option(void *opaque, char *key, char *value)
+{
+    MediaInfo_Option(opaque, key, value);
+}
+
+char *mediainfo_c_inform(void *opaque, size_t stream)
+{
+    return (char *) MediaInfo_Inform(opaque, stream);
+}
+
 void mediainfo_c_close(void *opaque)
 {
     MediaInfo_Close(opaque);

@@ -9,6 +9,7 @@ package mediainfo
 import "C"
 
 import (
+	// "encoding/xml"
 	"errors"
 	"unsafe"
 )
@@ -71,6 +72,39 @@ func (handle MediaInfo) Get(key string, stream int, typ uint32) (string, error) 
 	ret := C.GoString(cret)
 	if len(ret) == 0 {
 		return "", errors.New("Cannot get value for key.")
+	}
+
+	return ret, nil
+}
+
+/*
+ * Set Option
+ *
+ * Takes key and value strings
+ */
+func (handle MediaInfo) Option(key string, value string) {
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+
+	cvalue := C.CString(value)
+	defer C.free(unsafe.Pointer(cvalue))
+
+	cptr := unsafe.Pointer(handle.ptr)
+
+	C.mediainfo_c_option(cptr, ckey, cvalue)
+}
+
+/*
+ * Get complete information for the file
+ *
+ * Takes a stream number
+ */
+func (handle MediaInfo) Inform(stream int) (string, error) {
+	cptr := unsafe.Pointer(handle.ptr)
+	cret := C.mediainfo_c_inform(cptr, C.size_t(stream))
+	ret := C.GoString(cret)
+	if len(ret) == 0 {
+		return "", errors.New("Cannot get information.")
 	}
 
 	return ret, nil

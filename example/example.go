@@ -34,4 +34,15 @@ func main() {
 	}
 
 	fmt.Println(val)
+
+	/* Get all the info. */
+	info.Option("Complete", "1")
+	info.Option("Output", "XML")
+	completeInfo, err := info.Inform(0)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println(completeInfo)
 }
