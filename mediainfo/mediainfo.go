@@ -10,7 +10,6 @@ import "C"
 
 import (
 	"errors"
-	"strconv"
 	"strings"
 	"unsafe"
 )
@@ -111,7 +110,7 @@ func (handle MediaInfo) Inform(stream int) (string, error) {
 	return ret, nil
 }
 
-type Info map[string]map[string]interface{}
+type Info map[string]map[string]string
 
 /*
  * Get Parsed version of file info
@@ -140,7 +139,7 @@ func (handle MediaInfo) Info(stream int) (Info, error) {
 
 		if splitLength == 1 {
 			section = lineSplit[0]
-			info[section] = make(map[string]interface{})
+			info[section] = make(map[string]string)
 		} else if splitLength == 2 {
 			subsection_no_slashes := strings.Replace(lineSplit[0], "/", " ", -1)
 			subsection_title := strings.Title(subsection_no_slashes)
@@ -148,14 +147,9 @@ func (handle MediaInfo) Info(stream int) (Info, error) {
 
 			if _, ok := info[section][subsection_no_spaces]; !ok {
 				if strings.Contains(subsection_no_spaces, "Extensions") {
-					info[section][subsection_no_spaces] = strings.Split(lineSplit[1], " ")
+					info[section][subsection_no_spaces] = strings.Split(lineSplit[1], " ")[0]
 				} else {
-					floatVal, err := strconv.ParseFloat(lineSplit[1], 64)
-					if err == nil {
-						info[section][subsection_no_spaces] = floatVal
-					} else {
-						info[section][subsection_no_spaces] = lineSplit[1]
-					}
+					info[section][subsection_no_spaces] = lineSplit[1]
 				}
 			}
 		}
