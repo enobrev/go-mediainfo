@@ -9,25 +9,25 @@ package mediainfo
 import "C"
 
 import (
-    "errors"
-    "unsafe"
+	"errors"
+	"unsafe"
 )
 
 const (
-    General = C.MediaInfo_Stream_General
-    Video   = C.MediaInfo_Stream_Video
-    Audio   = C.MediaInfo_Stream_Audio
-    Image   = C.MediaInfo_Stream_Image
+	General = C.MediaInfo_Stream_General
+	Video   = C.MediaInfo_Stream_Video
+	Audio   = C.MediaInfo_Stream_Audio
+	Image   = C.MediaInfo_Stream_Image
 )
 
 /* Dont expose this ugliness. */
 type MediaInfo struct {
-    ptr unsafe.Pointer
+	ptr unsafe.Pointer
 }
 
 /* Loas the shared library. */
 func Init() {
-    C.mediainfo_c_init()
+	C.mediainfo_c_init()
 }
 
 /*
@@ -37,18 +37,18 @@ func Init() {
  * and returns a MediaInfo handler.
  */
 func Open(file string) (MediaInfo, error) {
-    var ret MediaInfo
+	var ret MediaInfo
 
-    cfile := C.CString(file)
-    defer C.free(unsafe.Pointer(cfile))
+	cfile := C.CString(file)
+	defer C.free(unsafe.Pointer(cfile))
 
-    cptr   := C.mediainfo_c_open(cfile)
-    ret.ptr = cptr
-    if cptr == nil {
-        return ret, errors.New("Cannot open file.")
-    }
+	cptr := C.mediainfo_c_open(cfile)
+	ret.ptr = cptr
+	if cptr == nil {
+		return ret, errors.New("Cannot open file.")
+	}
 
-    return ret, nil
+	return ret, nil
 }
 
 /*
@@ -59,26 +59,26 @@ func Open(file string) (MediaInfo, error) {
  *
  * Only handles one video and audio stream currently.
  *
- * Takes a key, a stream number, and a stream type as 
+ * Takes a key, a stream number, and a stream type as
  * arguments.
  */
 func (handle MediaInfo) Get(key string, stream int, typ uint32) (string, error) {
-    ckey  := C.CString(key)
-    cptr  := unsafe.Pointer(handle.ptr)
-    defer C.free(unsafe.Pointer(ckey))
+	ckey := C.CString(key)
+	cptr := unsafe.Pointer(handle.ptr)
+	defer C.free(unsafe.Pointer(ckey))
 
-    cret := C.mediainfo_c_get(cptr, ckey, C.size_t(stream), typ)
-    ret  := C.GoString(cret)
-    if len(ret) == 0 {
-        return "", errors.New("Cannot get value for key.")
-    }
+	cret := C.mediainfo_c_get(cptr, ckey, C.size_t(stream), typ)
+	ret := C.GoString(cret)
+	if len(ret) == 0 {
+		return "", errors.New("Cannot get value for key.")
+	}
 
-    return ret, nil
+	return ret, nil
 }
 
 /* Close a handle. */
 func (handle MediaInfo) Close() {
-    cptr  := unsafe.Pointer(handle.ptr)
+	cptr := unsafe.Pointer(handle.ptr)
 
-    C.mediainfo_c_close(cptr)
+	C.mediainfo_c_close(cptr)
 }
