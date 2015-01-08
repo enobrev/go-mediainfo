@@ -147,11 +147,15 @@ func (handle MediaInfo) Info(stream int) (Info, error) {
 			subsection_no_spaces := strings.Replace(subsection_title, " ", "_", -1)
 
 			if _, ok := info[section][subsection_no_spaces]; !ok {
-				floatVal, err := strconv.ParseFloat(lineSplit[1], 64)
-				if err == nil {
-					info[section][subsection_no_spaces] = floatVal
+				if strings.Contains(subsection_no_spaces, "Extensions") {
+					info[section][subsection_no_spaces] = strings.Split(lineSplit[1], " ")
 				} else {
-					info[section][subsection_no_spaces] = lineSplit[1]
+					floatVal, err := strconv.ParseFloat(lineSplit[1], 64)
+					if err == nil {
+						info[section][subsection_no_spaces] = floatVal
+					} else {
+						info[section][subsection_no_spaces] = lineSplit[1]
+					}
 				}
 			}
 		}
