@@ -37,7 +37,7 @@ char *mediainfo_c_get(void *opaque, char *key,
 
 char *mediainfo_c_option(void *opaque, char *key, char *value)
 {
-    return MediaInfo_Option(opaque, key, value);
+    return (char *) MediaInfo_Option(opaque, key, value);
 }
 
 char *mediainfo_c_inform(void *opaque, size_t stream)
