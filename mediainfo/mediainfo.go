@@ -82,7 +82,7 @@ func (handle MediaInfo) Get(key string, stream int, typ uint32) (string, error) 
  *
  * Takes key and value strings
  */
-func (handle MediaInfo) Option(key string, value string) {
+func (handle MediaInfo) Option(key string, value string) (string) {
 	ckey := C.CString(key)
 	defer C.free(unsafe.Pointer(ckey))
 
@@ -91,7 +91,7 @@ func (handle MediaInfo) Option(key string, value string) {
 
 	cptr := unsafe.Pointer(handle.ptr)
 
-	C.mediainfo_c_option(cptr, ckey, cvalue)
+	return C.GoString(C.mediainfo_c_option(cptr, ckey, cvalue))
 }
 
 /*
