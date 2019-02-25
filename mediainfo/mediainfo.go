@@ -5,11 +5,14 @@ package mediainfo
  #cgo darwin LDFLAGS: -framework CoreFoundation
  #include <stdlib.h>
  #include "c/mediainfo_wrapper.c"
+ #include "c/buffer_wrapper.c"
 */
 import "C"
 
 import (
 	"errors"
+	"io"
+	"mime/multipart"
 	"strings"
 	"unsafe"
 )
@@ -53,6 +56,51 @@ func Open(file string) (MediaInfo, error) {
 }
 
 /*
+ * Initializes MediaInfo structure for buffer read.
+ */
+func InitBuffer() (MediaInfo, error) {
+	var ret MediaInfo
+	cptr := C.buffer_c_init()
+
+	ret.ptr = cptr
+	if cptr == nil {
+		return ret, errors.New("Cannot init MediaInfo")
+	}
+
+	return ret, nil
+}
+
+/*
+ * Assigns opened buffer to the MediaInfo structure and reads its info.
+ * Returns true if everything is OK.
+ */
+func (handle MediaInfo) ReadBuffer(file multipart.File) bool {
+	mi := unsafe.Pointer(handle.ptr)
+	sz, _ := file.Seek(0, io.SeekEnd)
+	C.buffer_c_open(mi, C.ulong(sz), C.ulong(0))
+
+	_, _ = file.Seek(0, io.SeekStart)
+	for {
+		bt := make([]byte, 1024)
+		rd, err := file.Read(bt)
+		if err != nil {
+			if err != io.EOF {
+				return false
+			}
+
+			break
+		}
+
+		cont := C.buffer_c_continue(mi, *C.uchar(&bt[0]), C.ulong(rd))
+		if cont != 0 {
+			break
+		}
+	}
+
+	return true
+}
+
+/*
  * Get audio or video info for a key.
  *
  * Matches up with the list available via:
@@ -82,7 +130,7 @@ func (handle MediaInfo) Get(key string, stream int, typ uint32) (string, error) 
  *
  * Takes key and value strings
  */
-func (handle MediaInfo) Option(key string, value string) (string) {
+func (handle MediaInfo) Option(key string, value string) string {
 	ckey := C.CString(key)
 	defer C.free(unsafe.Pointer(ckey))
 
