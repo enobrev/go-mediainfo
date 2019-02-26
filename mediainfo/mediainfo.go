@@ -12,7 +12,6 @@ import "C"
 import (
 	"errors"
 	"io"
-	"mime/multipart"
 	"strings"
 	"unsafe"
 )
@@ -74,7 +73,7 @@ func InitBuffer() (MediaInfo, error) {
  * Assigns opened buffer to the MediaInfo structure and reads its info.
  * Returns true if everything is OK.
  */
-func (handle MediaInfo) ReadBuffer(file multipart.File) bool {
+func (handle MediaInfo) ReadBuffer(file io.ReadSeeker) bool {
 	mi := unsafe.Pointer(handle.ptr)
 	sz, _ := file.Seek(0, io.SeekEnd)
 	C.buffer_c_open(mi, C.ulong(sz), C.ulong(0))
@@ -91,8 +90,11 @@ func (handle MediaInfo) ReadBuffer(file multipart.File) bool {
 			break
 		}
 
-		cont := C.buffer_c_continue(mi, *C.uchar(&bt[0]), C.ulong(rd))
-		if cont != 0 {
+		if rd == 0 {
+			break
+		}
+
+		if C.buffer_c_continue(mi, (*C.uchar)(&bt[0]), C.ulong(rd)) != 0 {
 			break
 		}
 	}
