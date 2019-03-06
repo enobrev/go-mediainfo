@@ -48,7 +48,7 @@ func Open(file string) (MediaInfo, error) {
 	cptr := C.mediainfo_c_open(cfile)
 	ret.ptr = cptr
 	if cptr == nil {
-		return ret, errors.New("Cannot open file.")
+		return ret, errors.New("cannot open file")
 	}
 
 	return ret, nil
@@ -63,7 +63,7 @@ func InitBuffer() (MediaInfo, error) {
 
 	ret.ptr = cptr
 	if cptr == nil {
-		return ret, errors.New("Cannot init MediaInfo")
+		return ret, errors.New("cannot init MediaInfo")
 	}
 
 	return ret, nil
@@ -121,7 +121,7 @@ func (handle MediaInfo) Get(key string, stream int, typ uint32) (string, error) 
 	cret := C.mediainfo_c_get(cptr, ckey, C.size_t(stream), typ)
 	ret := C.GoString(cret)
 	if len(ret) == 0 {
-		return "", errors.New("Cannot get value for key.")
+		return "", errors.New("cannot get value for key")
 	}
 
 	return ret, nil
@@ -154,7 +154,7 @@ func (handle MediaInfo) Inform(stream int) (string, error) {
 	cret := C.mediainfo_c_inform(cptr, C.size_t(stream))
 	ret := C.GoString(cret)
 	if len(ret) == 0 {
-		return "", errors.New("Cannot get information.")
+		return "", errors.New("cannot get information")
 	}
 
 	return ret, nil
@@ -191,15 +191,15 @@ func (handle MediaInfo) Info(stream int) (Info, error) {
 			section = lineSplit[0]
 			info[section] = make(map[string]string)
 		} else if splitLength == 2 {
-			subsection_no_slashes := strings.Replace(lineSplit[0], "/", " ", -1)
-			subsection_title := strings.Title(subsection_no_slashes)
-			subsection_no_spaces := strings.Replace(subsection_title, " ", "_", -1)
+			subsectionNoSlashes := strings.Replace(lineSplit[0], "/", " ", -1)
+			subsectionTitle := strings.Title(subsectionNoSlashes)
+			subsectionNoSpaces := strings.Replace(subsectionTitle, " ", "_", -1)
 
-			if _, ok := info[section][subsection_no_spaces]; !ok {
-				if strings.Contains(subsection_no_spaces, "Extensions") {
-					info[section][subsection_no_spaces] = strings.Split(lineSplit[1], " ")[0]
+			if _, ok := info[section][subsectionNoSpaces]; !ok {
+				if strings.Contains(subsectionNoSpaces, "Extensions") {
+					info[section][subsectionNoSpaces] = strings.Split(lineSplit[1], " ")[0]
 				} else {
-					info[section][subsection_no_spaces] = lineSplit[1]
+					info[section][subsectionNoSpaces] = lineSplit[1]
 				}
 			}
 		}
